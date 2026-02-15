@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUANTUM ELITE | FINANCIAL TERMINAL V.X</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #00ff9d;
+            --blue: #00d1ff;
+            --purple: #bc00ff;
+            --bg: #020205;
+            --card: #0a0a12;
+            --border: rgba(0, 255, 157, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg);
+            color: #e0e0e0;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #101025 0%, #020205 100%);
+        }
+
+        /* --- INTERFAZ DE NAVEGACIÓN --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 70px;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--neon);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 9999; backdrop-filter: blur(10px);
+        }
+
+        .nav-btn {
+            background: transparent; border: 1px solid transparent;
+            color: #888; padding: 8px 16px; border-radius: 4px;
+            font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer;
+            transition: 0.3s; letter-spacing: 1px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            color: var(--neon); border-color: var(--neon);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+            text-shadow: 0 0 5px var(--neon);
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-wrapper { margin-top: 90px; padding: 20px; max-width: 1400px; margin-left: auto; margin-right: auto; }
+        
+        .section { display: none; animation: fadeIn 0.5s ease-out; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PORTADA (HOME) --- */
+        .hero-box {
+            text-align: center; padding: 80px 20px; border: 1px solid var(--border);
+            border-radius: 40px; background: rgba(255,255,255,0.02);
+            position: relative; overflow: hidden;
+        }
+        .hero-box h1 { font-family: 'Orbitron'; font-size: 4.5rem; color: var(--neon); margin-bottom: 20px; letter-spacing: -2px; }
+        .hero-box p { font-size: 1.4rem; color: #aaa; max-width: 800px; margin: 0 auto 40px; }
+
+        .intentions { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .i-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #1a1a2e; width: 300px; text-align: left; }
+        .i-card h4 { color: var(--blue); font-family: 'Orbitron'; margin-bottom: 10px; }
+
+        /* --- ACADEMIA (CATEGORÍAS) --- */
+        .category-label { font-family: 'Orbitron'; color: var(--purple); margin: 30px 0 15px; font-size: 1.2rem; display: block; }
+        .academy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .topic {
+            background: var(--card); border: 1px solid #1a1a2e; padding: 25px;
+            border-radius: 15px; cursor: pointer; transition: 0.3s;
+        }
+        .topic:hover { border-color: var(--neon); background: rgba(0,255,157,0.05); }
+        .topic h3 { color: var(--neon); font-family: 'Orbitron'; font-size: 0.9rem; margin-bottom: 10px; }
+        .topic-content { display: none; margin-top: 15px; color: #ccc; font-size: 0.9rem; border-top: 1px solid #222; padding-top: 10px; }
+        .topic.open .topic-content { display: block; }
+
+        /* --- SIMULADOR --- */
+        .sim-panel { display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
+        .controls { background: var(--card); padding: 30px; border-radius: 25px; border: 1px solid var(--border); }
+        .input-box { margin-bottom: 20px; }
+        .input-box label { display: block; color: var(--blue); font-family: 'Orbitron'; font-size: 0.7rem; margin-bottom: 8px; }
+        .input-box input { 
+            width: 100%; background: #000; border: 1px solid #333; padding: 15px; 
+            color: var(--neon); font-size: 1.4rem; border-radius: 10px; font-family: 'Rajdhani'; font-weight: 700;
+        }
+        .action-btn {
+            width: 100%; padding: 18px; background: var(--neon); color: #000;
+            border: none; border-radius: 10px; font-family: 'Orbitron'; font-weight: 900;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .action-btn:hover { background: var(--blue); box-shadow: 0 0 20px var(--blue); }
+
+        .result-card { 
+            margin-top: 25px; background: #000; padding: 20px; border-radius: 15px; 
+            text-align: center; border: 1px solid var(--neon); 
+        }
+        .result-card span { font-size: 2.2rem; color: var(--neon); font-family: 'Orbitron'; display: block; }
+
+        /* --- QUIZ --- */
+        .quiz-container { max-width: 700px; margin: 0 auto; background: var(--card); padding: 40px; border-radius: 30px; border: 1px solid var(--purple); }
+        .q-title { font-family: 'Orbitron'; color: #fff; margin-bottom: 30px; font-size: 1.2rem; }
+        .option {
+            background: #111; border: 1px solid #222; padding: 18px; margin-bottom: 12px;
+            border-radius: 12px; cursor: pointer; transition: 0.2s;
+        }
+        .option:hover { border-color: var(--purple); background: rgba(188, 0, 255, 0.1); }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .sim-panel { grid-template-columns: 1fr; }
+            .hero-box h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div style="font-family:'Orbitron'; color:var(--neon); font-weight:900; font-size:1.4rem;">QUANTUM</div>
+    <div id="nav-links">
+        <button class="nav-btn active" onclick="tab('home')">SISTEMA</button>
+        <button class="nav-btn" onclick="tab('academy')">ACADEMIA</button>
+        <button class="nav-btn" onclick="tab('simulator')">SIMULADOR</button>
+        <button class="nav-btn" onclick="tab('quiz')">EXAMEN</button>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+
+    <section id="home" class="section active">
+        <div class="hero-box">
+            <h1>QUANTUM ELITE</h1>
+            <p>Terminal de inteligencia financiera avanzada. El conocimiento es el único activo que no se deprecia.</p>
+            <div class="intentions">
+                <div class="i-card">
+                    <h4>MISION</h4>
+                    <p>Democratizar el acceso a herramientas de alta finanza para estudiantes ambiciosos.</p>
+                </div>
+                <div class="i-card">
+                    <h4>METODOLOGIA</h4>
+                    <p>Combinación de teoría de interés compuesto con simulaciones de mercado real.</p>
+                </div>
+                <div class="i-card">
+                    <h4>OBJETIVO</h4>
+                    <p>Certificar el conocimiento necesario para alcanzar la libertad financiera.</p>
+                </div>
+            </div>
+            <button class="action-btn" style="width: 300px; margin-top: 40px;" onclick="tab('academy')">INICIAR TERMINAL</button>
+        </div>
+    </section>
+
+    <section id="academy" class="section">
+        <span class="category-label">PILARES FUNDAMENTALES</span>
+        <div class="academy-grid">
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>01. INTERÉS COMPUESTO</h3>
+                <p>El "Efecto Bola de Nieve" explicado.</p>
+                <div class="topic-content">Es el proceso donde los intereses generados se suman al capital inicial, generando nuevos intereses. A largo plazo, crea una curva exponencial de riqueza.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>02. INFLACIÓN Y PODER</h3>
+                <p>Cómo protegerse de la pérdida de valor.</p>
+                <div class="topic-content">La inflación es el aumento de precios. Si tu dinero no rinde más que la inflación, te estás volviendo más pobre cada día.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>03. S&P 500</h3>
+                <p>El estándar de oro de la inversión.</p>
+                <div class="topic-content">Un índice que agrupa las 500 empresas más grandes de EE.UU. Históricamente rinde un 10% anual.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>04. ACTIVOS VS PASIVOS</h3>
+                <p>La regla de oro de Robert Kiyosaki.</p>
+                <div class="topic-content">Activo: Pone dinero en tu bolsillo. Pasivo: Saca dinero de tu bolsillo. Hazte rico comprando activos.</div>
+            </div>
+        </div>
+
+        <span class="category-label">ESTRATEGIA AVANZADA</span>
+        <div class="academy-grid">
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>05. DIVERSIFICACIÓN</h3>
+                <p>Gestión de riesgos inteligente.</p>
+                <div class="topic-content">No pongas todos los huevos en una cesta. Reparte tu dinero en tecnología, oro, raíces y bonos.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>06. BITCOIN & BLOCKCHAIN</h3>
+                <p>La nueva reserva de valor digital.</p>
+                <div class="topic-content">Dinero descentralizado y limitado. Funciona como protección contra la impresión excesiva de dinero estatal.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>07. REITs (BIENES RAÍCES)</h3>
+                <p>Cobrar rentas sin comprar edificios.</p>
+                <div class="topic-content">Fondos que invierten en propiedades y reparten los alquileres a los accionistas como dividendos.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>08. PSICOLOGÍA DEL INVERSOR</h3>
+                <p>Controlar el miedo y la avaricia.</p>
+                <div class="topic-content">El mercado es un juego mental. El que tiene paciencia gana el dinero del que tiene prisa.</div>
+            </div>
+        </div>
+
+        <span class="category-label">LIBERTAD TOTAL</span>
+        <div class="academy-grid">
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>09. REGLA DEL 4%</h3>
+                <p>El número de tu jubilación.</p>
+                <div class="topic-content">Si puedes vivir retirando solo el 4% de tus inversiones anuales, técnicamente ya no necesitas trabajar.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>10. COSTO DE OPORTUNIDAD</h3>
+                <p>Lo que dejas de ganar hoy.</p>
+                <div class="topic-content">Cada dólar gastado en un lujo es un dólar que no se multiplicará por 20 en el futuro.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>11. DIVIDENDOS PASIVOS</h3>
+                <p>Recibir pagos mensuales por ser dueño.</p>
+                <div class="topic-content">Empresas que comparten sus ganancias contigo. Es la forma más pura de ingreso pasivo.</div>
+            </div>
+            <div class="topic" onclick="this.classList.toggle('open')">
+                <h3>12. INTERÉS SIMPLE VS COMPUESTO</h3>
+                <p>La comparativa definitiva.</p>
+                <div class="topic-content">El interés simple es lineal. El compuesto es exponencial. Esa diferencia es lo que crea las fortunas.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="simulator" class="section">
+        <div class="sim-panel">
+            <div class="controls">
+                <div class="input-box"><label>INVERSIÓN INICIAL ($)</label><input type="number" id="capital" value="1000"></div>
+                <div class="input-box"><label>APORTE MENSUAL ($)</label><input type="number" id="aporte" value="200"></div>
+                <div class="input-box"><label>INTERÉS ANUAL (%)</label><input type="number" id="tasa" value="10"></div>
+                <div class="input-box"><label>AÑOS</label><input type="number" id="tiempo" value="20"></div>
+                <button class="action-btn" onclick="ejecutarSimulacion()">CALCULAR PROYECCIÓN</button>
+                <div class="result-card">
+                    <p style="font-size:0.7rem; font-family:'Orbitron'; color:var(--blue);">PATRIMONIO FINAL</p>
+                    <span id="final_val">$0</span>
+                </div>
+            </div>
+            <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 20px;">
+                <canvas id="mainChart" style="max-height: 500px;"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section id="quiz" class="section">
+        <div class="quiz-container">
+            <div id="quiz-ui">
+                <p id="q-count" style="color:var(--purple); font-family:'Orbitron'; font-size:0.7rem; margin-bottom:10px;">PREGUNTA 1/10</p>
+                <h2 id="question-text" class="q-title">Cargando...</h2>
+                <div id="options-box"></div>
+            </div>
+            <div id="result-ui" style="display:none; text-align: center;">
+                <h1 id="score-text" style="font-size:5rem; color:var(--neon); font-family:'Orbitron';">0/10</h1>
+                <p style="margin-bottom:20px;">CALIFICACIÓN FINAL</p>
+                <button class="action-btn" onclick="location.reload()">REINICIAR TERMINAL</button>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- LÓGICA DE NAVEGACIÓN ---
+    function tab(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(id).classList.add('active');
+        const buttons = document.querySelectorAll('.nav-btn');
+        buttons.forEach(btn => {
+            if(btn.innerText.toLowerCase() === id || (id === 'home' && btn.innerText === 'SISTEMA')) {
+                btn.classList.add('active');
+            }
+        });
+
+        if(id === 'simulator') ejecutarSimulacion();
+    }
+
+    // --- LÓGICA DEL SIMULADOR ---
+    let myChart;
+    function ejecutarSimulacion() {
+        const capital = parseFloat(document.getElementById('capital').value) || 0;
+        const aporte = parseFloat(document.getElementById('aporte').value) || 0;
+        const tasa = (parseFloat(document.getElementById('tasa').value) / 100) / 12;
+        const años = parseInt(document.getElementById('tiempo').value) || 0;
+
+        let total = capital;
+        let dataPatrimonio = [capital];
+        let labels = ["Hoy"];
+
+        for(let i = 1; i <= años; i++) {
+            for(let j = 0; j < 12; j++) {
+                total = (total * (1 + tasa)) + aporte;
+            }
+            dataPatrimonio.push(Math.round(total));
+            labels.push("Año " + i);
+        }
+
+        document.getElementById('final_val').innerText = "$" + Math.round(total).toLocaleString();
+
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Crecimiento Exponencial',
+                    data: dataPatrimonio,
+                    borderColor: '#00ff9d',
+                    backgroundColor: 'rgba(0, 255, 157, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#1a1a1a' }, ticks: { color: '#888' } },
+                    x: { grid: { display: false }, ticks: { color: '#888' } }
+                }
+            }
+        });
+    }
+
+    // --- LÓGICA DEL QUIZ ---
+    const qData = [
+        { q: "¿Qué genera intereses sobre los intereses ya ganados?", o: ["Ahorro simple", "Interés Compuesto", "Inflación"], a: 1 },
+        { q: "¿Qué índice rastrea las 500 mayores empresas de EE.UU.?", o: ["Nasdaq", "S&P 500", "Dow Jones"], a: 1 },
+        { q: "Un activo es algo que...", o: ["Te quita dinero", "Pone dinero en tu bolsillo", "Se deprecia rápido"], a: 1 },
+        { q: "¿Cómo se llama el aumento de precios?", o: ["Deflación", "Inflación", "PIB"], a: 1 },
+        { q: "¿Qué es la regla del 4%?", o: ["Un impuesto", "Retiro para jubilación", "Tasa de ahorro"], a: 1 },
+        { q: "La diversificación sirve para...", o: ["Gastar más", "Reducir el riesgo", "Evitar el interés"], a: 1 },
+        { q: "¿Bitcoin es centralizado o descentralizado?", o: ["Centralizado", "Descentralizado", "Ninguna"], a: 1 },
+        { q: "Un REIT permite invertir en...", o: ["Oro", "Bienes Raíces", "Petróleo"], a: 1 },
+        { q: "¿El interés simple crece de forma...?", o: ["Exponencial", "Lineal", "Negativa"], a: 1 },
+        { q: "¿Qué es un pasivo?", o: ["Una inversión", "Algo que saca dinero de tu bolsillo", "Un bono"], a: 1 }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+
+    function loadQuestion() {
+        const q = qData[currentQ];
+        document.getElementById('q-count').innerText = `PREGUNTA ${currentQ + 1}/10`;
+        document.getElementById('question-text').innerText = q.q;
+        const box = document.getElementById('options-box');
+        box.innerHTML = "";
+        
+        q.o.forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = "option";
+            div.innerText = opt;
+            div.onclick = () => {
+                if(i === q.a) score++;
+                currentQ++;
+                if(currentQ < qData.length) loadQuestion();
+                else showScore();
+            };
+            box.appendChild(div);
+        });
+    }
+
+    function showScore() {
+        document.getElementById('quiz-ui').style.display = "none";
+        document.getElementById('result-ui').style.display = "block";
+        document.getElementById('score-text').innerText = score + "/10";
+    }
+
+    // Inicialización al cargar la ventana
+    window.onload = () => {
+        loadQuestion();
+    };
+</script>
+</body>
+</html>
